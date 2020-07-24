@@ -2,7 +2,7 @@
 
 Este projeto foi desenvolvido para uma disciplina da faculdade.
 
-A nossa estrutura é composta por um banco de dados para o controle de estoque, o qual:
+A estrutura é composta por um banco de dados para o controle de estoque, o qual:
 * Permitirá a entrada de produtos, atualizando a quantidade e, se quiser, o valor de venda
 * Permitirá a saída (venda de produtos), de acordo com o estoque da empresa
 
