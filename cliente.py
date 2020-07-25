@@ -186,4 +186,5 @@ while operacao < 5:
     operacao = int (input ("Deseja fazer outra operação? Digite: \n1 para Entrada \n2 para Atualização do Valor de Venda \
                             \n3 para Vendas \n4 para Relatório \n5 para Sair\n"))
 
+db.fechar()
 print ("Até mais!")
