@@ -95,8 +95,8 @@ class Caixa():
         return (produto_comprado, valor_produto)
     
     def balanca(self):
-        host = 'localhost';
-        port = 8888;
+        host = 'localhost'
+        port = 8888
         s = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
         s.connect ((host, port))
 
