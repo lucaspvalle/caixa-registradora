@@ -1,4 +1,4 @@
-# caixaregistradora-sql
+# caixa-registradora
 
 Este projeto foi desenvolvido para uma disciplina da faculdade.
 
