@@ -9,8 +9,7 @@ def main():
                 2: ["Atualização de Produto", db.atualizar_produto],
                 3: ["Vendas", db.vendas],
                 4: ["Relatório de Itens", db.relatorio_estoque],
-                5: ["Relatório de Itens em Falta", db.relatorio_baixo_estoque],
-                6: ["Sair", db.fechar]}
+                5: ["Sair", db.fechar]}
 
     print("Operações disponíveis:")
     for item in comandos.keys():
