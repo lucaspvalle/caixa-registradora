@@ -18,12 +18,14 @@ class Caixa:
             if conteudo is not None:
                 novo_estoque = conteudo["qtdade"] + input_qtdade
                 self.cnx.execute("UPDATE estoque SET qtdade = ? WHERE codigo = ?", (novo_estoque, input_codigo))
+                self.cnx.commit()
             else:
                 input_material = input("Digite o nome do material que está chegando: ")
                 input_valor = input("Insira o valor de venda deste material: R$")
 
                 self.cnx.execute("INSERT INTO estoque VALUES (?, ?, ?, ?)",
                                  (input_codigo, input_material, input_qtdade, input_valor))
+                self.cnx.commit()
 
             comando = int(input("Deseja adicionar outro produto no sistema? 1 caso sim, 0 caso contrário:\n"))
             if not comando:
@@ -39,6 +41,7 @@ class Caixa:
             if conteudo is not None:
                 atualizar_venda = input("Digite o valor de venda a ser atualizado: R$")
                 self.cnx.execute("UPDATE estoque SET valor = ? WHERE codigo = ?", (atualizar_venda, produto_atualizado))
+                self.cnx.commit()
             else:
                 print("Produto inexistente!")
 
@@ -86,6 +89,7 @@ class Caixa:
 
                 novo_estoque = float(conteudo["qtdade"]) - peso
                 self.cnx.execute("UPDATE estoque SET qtdade = ? WHERE codigo = ?", (novo_estoque, output_codigo))
+                self.cnx.commit()
             else:
                 print("Produto insuficiente")
         else:
