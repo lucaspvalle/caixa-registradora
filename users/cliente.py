@@ -170,3 +170,6 @@ class Caixa:
 
     def fechar(self):
         self.cnx.close()
+        print("Até mais!")
+
+        exit()
