@@ -12,8 +12,7 @@ class Caixa:
             input_codigo = input("Insira um código para este material: ")
             input_qtdade = float(input("Digite a quantidade deste material a entrar (em kg): "))
 
-            conteudo = (self.cnx.execute("SELECT produto, qtdade FROM estoque where codigo = ?",
-                                         (input_codigo,)).fetchone())
+            conteudo = self.cnx.execute("SELECT produto,qtdade FROM estoque where codigo=?", (input_codigo,)).fetchone()
 
             if conteudo is not None:
                 novo_estoque = conteudo["qtdade"] + input_qtdade
@@ -34,13 +33,11 @@ class Caixa:
     def atualizar_produto(self):
         while True:
             produto_atualizado = input("Digite o código do produto a ter o valor de venda alterado: ")
-
-            conteudo = (self.cnx.execute("SELECT produto FROM estoque WHERE codigo = ?",
-                                         (produto_atualizado,)).fetchone())
+            conteudo = self.cnx.execute("SELECT produto FROM estoque WHERE codigo=?", (produto_atualizado,)).fetchone()
 
             if conteudo is not None:
                 atualizar_venda = input("Digite o valor de venda a ser atualizado: R$")
-                self.cnx.execute("UPDATE estoque SET valor = ? WHERE codigo = ?", (atualizar_venda, produto_atualizado))
+                self.cnx.execute("UPDATE estoque SET valor = ? WHERE codigo=?", (atualizar_venda, produto_atualizado))
                 self.cnx.commit()
             else:
                 print("Produto inexistente!")
@@ -51,8 +48,6 @@ class Caixa:
 
     @staticmethod
     def _ler_codigo_de_barras(output_codigo):
-        produto_comprado = ""
-        valor_produto = 0
         contas = {"1": "Prefeitura",
                   "2": "Saneamento",
                   "3": "Energia Elétrica e Gás",
@@ -69,6 +64,9 @@ class Caixa:
             print(produto_comprado)
             print(f"Valor a pagar: R$ {valor_produto}")
         else:
+            produto_comprado = ""
+            valor_produto = 0
+
             print("Código não reconhecido")
 
         return produto_comprado, valor_produto
@@ -117,14 +115,15 @@ class Caixa:
         valor_carrinho = 0
 
         while True:
-            valor_produto = 0
-            produto_comprado = ""
             output_codigo = input("Digite o código do produto a ser vendido: ")
 
             if output_codigo[0] == "7":
                 produto_comprado, valor_produto = self._adicionar_produto_no_carrinho(output_codigo)
             elif output_codigo[0] == "8":
                 produto_comprado, valor_produto = self._ler_codigo_de_barras(output_codigo)
+            else:
+                valor_produto = 0
+                produto_comprado = ""
 
             if valor_produto > 0:
                 lista_compras.append(produto_comprado)
