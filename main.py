@@ -12,14 +12,12 @@ def main():
                 5: ["Sair", db.fechar]}
 
     print("Operações disponíveis:")
-    for item in comandos.keys():
-        print(f"{item}) {comandos[item][0]}")
+    for chave, (descricao, _) in comandos.items():
+        print(f"{chave}) {descricao}")
 
     while True:
-        operacao = int(input("\nDigite o ID da operação desejada: "))
-
-        if operacao in comandos.keys():
-            comandos[operacao][1]()
+        operacao = db.valida_tipo_de_input("Digite o ID da operação desejada", "inteiro")
+        comandos.get(operacao, ["Tratamento de erro", lambda: print("Comando desconhecido. Tente novamente.")])[1]()
 
 
 if __name__ == "__main__":

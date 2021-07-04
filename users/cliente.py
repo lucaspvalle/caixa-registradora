@@ -7,42 +7,63 @@ class Caixa:
         self.cnx = sqlite3.connect('caixa.db')
         self.cnx.row_factory = sqlite3.Row
 
-    def entrada(self):
-        while True:
-            input_codigo = input("Insira um código para este material: ")
-            input_qtdade = float(input("Digite a quantidade deste material a entrar (em kg): "))
+    @staticmethod
+    def valida_tipo_de_input(quem, tipo):
+        validos = {"inteiro": int,
+                   "decimal": float}
 
-            conteudo = self.cnx.execute("SELECT produto,qtdade FROM estoque where codigo=?", (input_codigo,)).fetchone()
+        while True:
+            operacao = input(f"{quem}: ")
+            try:
+                return validos[tipo](operacao)
+            except ValueError:
+                print(f"Comando deve ser um número {tipo}. Tente novamente.")
+                continue
+
+    def entrada(self):
+        print("Inserindo novos materiais:\n")
+
+        while True:
+            input_codigo = self.valida_tipo_de_input("Código do material", "inteiro")
+            input_qtdade = self.valida_tipo_de_input("Quantidade (kg)", "decimal")
+
+            conteudo = self.cnx.execute("SELECT produto, qtdade FROM estoque where codigo = ?",
+                                        (input_codigo,)).fetchone()
 
             if conteudo is not None:
                 novo_estoque = conteudo["qtdade"] + input_qtdade
                 self.cnx.execute("UPDATE estoque SET qtdade = ? WHERE codigo = ?", (novo_estoque, input_codigo))
                 self.cnx.commit()
             else:
-                input_material = input("Digite o nome do material que está chegando: ")
-                input_valor = input("Insira o valor de venda deste material: R$")
+                input_material = input("Descrição do material: ")
+                input_valor = self.valida_tipo_de_input("Valor de venda (R$)", "decimal")
 
                 self.cnx.execute("INSERT INTO estoque VALUES (?, ?, ?, ?)",
                                  (input_codigo, input_material, input_qtdade, input_valor))
                 self.cnx.commit()
 
-            comando = int(input("Deseja adicionar outro produto no sistema? 1 caso sim, 0 caso contrário:\n"))
+            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+                                                "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
 
     def atualizar_produto(self):
+        print("Atualizando produtos:\n")
+
         while True:
-            produto_atualizado = input("Digite o código do produto a ter o valor de venda alterado: ")
-            conteudo = self.cnx.execute("SELECT produto FROM estoque WHERE codigo=?", (produto_atualizado,)).fetchone()
+            produto_atualizado = self.valida_tipo_de_input("Código do material", "inteiro")
+            conteudo = self.cnx.execute("SELECT produto FROM estoque WHERE codigo = ?",
+                                        (produto_atualizado,)).fetchone()
 
             if conteudo is not None:
-                atualizar_venda = input("Digite o valor de venda a ser atualizado: R$")
-                self.cnx.execute("UPDATE estoque SET valor = ? WHERE codigo=?", (atualizar_venda, produto_atualizado))
+                atualizar_venda = self.valida_tipo_de_input("Novo valor de venda (R$)", "decimal")
+                self.cnx.execute("UPDATE estoque SET valor = ? WHERE codigo = ?", (atualizar_venda, produto_atualizado))
                 self.cnx.commit()
             else:
                 print("Produto inexistente!")
 
-            comando = int(input("Deseja atualizar outro produto no sistema? 1 caso sim, 0 caso contrário:\n"))
+            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+                                                "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
 
@@ -114,8 +135,9 @@ class Caixa:
         lista_compras = []
         valor_carrinho = 0
 
+        print("Adicione os produtos a serem vendidos:\n")
         while True:
-            output_codigo = input("Digite o código do produto a ser vendido: ")
+            output_codigo = input("Código do material: ")
 
             if output_codigo[0] == "7":
                 produto_comprado, valor_produto = self._adicionar_produto_no_carrinho(output_codigo)
@@ -129,7 +151,8 @@ class Caixa:
                 lista_compras.append(produto_comprado)
                 valor_carrinho += valor_produto
 
-            comando = int(input("Deseja adicionar outro produto no carrinho? 1 caso sim, 0 caso contrário:\n"))
+            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+                                                "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
 
@@ -141,7 +164,8 @@ class Caixa:
             print(f"O valor total da compra foi R$ {valor_carrinho:.2f}")
 
     def relatorio_estoque(self):
-        comando = int(input("Digite 1 para o relatório completo de estoque ou 0 para o relatório de baixo estoque: "))
+        comando = self.valida_tipo_de_input("Digite 1 para o relatório completo de estoque ou "
+                                            "0 para o relatório de baixo estoque", "inteiro")
 
         if comando:
             print("Produtos cadastrados no sistema")
@@ -159,7 +183,7 @@ class Caixa:
             print("Não há produtos para este relatório!")
 
     def fechar(self):
-        print("Conexão encerrada")
+        print("Conexão encerrada!")
 
         self.cnx.close()
         exit()
