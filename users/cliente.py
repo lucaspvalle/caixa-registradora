@@ -163,17 +163,8 @@ class Caixa:
 
             print(f"O valor total da compra foi R$ {valor_carrinho:.2f}")
 
-    def relatorio_estoque(self):
-        comando = self.valida_tipo_de_input("Digite 1 para o relatório completo de estoque ou "
-                                            "0 para o relatório de baixo estoque", "inteiro")
-
-        if comando:
-            print("Produtos cadastrados no sistema")
-            conteudo = self.cnx.execute("SELECT * FROM estoque").fetchall()
-        else:
-            print("Produtos com baixo estoque (menos que 5 kg)")
-            conteudo = self.cnx.execute("SELECT * FROM estoque WHERE qtdade < 5").fetchall()
-
+    @staticmethod
+    def _imprime_relatorio(conteudo):
         if len(conteudo) > 0:
             print("\nCódigo\tProduto\tQtdade (kg)\tValor (R$)")
 
@@ -181,6 +172,26 @@ class Caixa:
                 print(f"{codigo}\t{produto}\t{qtdade:.2f}\t{valor}")
         else:
             print("Não há produtos para este relatório!")
+
+    def relatorio_gerencial(self):
+        print("Relatório Gerencial:\n")
+
+        conteudo = self.cnx.execute("SELECT * FROM estoque").fetchall()
+        self._imprime_relatorio(conteudo)
+
+    def relatorio_de_baixo_estoque(self):
+        print("Relatório de Baixo Estoque:\n")
+
+        while True:
+            limite = self.valida_tipo_de_input("Defina, em kg, o limite de baixo estoque", "decimal")
+
+            conteudo = self.cnx.execute("SELECT * FROM estoque WHERE qtdade <= ?", (limite,)).fetchall()
+            self._imprime_relatorio(conteudo)
+
+            comando = self.valida_tipo_de_input("Deseja analisar outro limite de estoque? "
+                                                "1 caso sim, 0 caso contrário", "inteiro")
+            if not comando:
+                break
 
     def fechar(self):
         print("Conexão encerrada!")

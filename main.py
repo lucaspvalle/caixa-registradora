@@ -8,8 +8,9 @@ def main():
     comandos = {1: ["Entrada", db.entrada],
                 2: ["Atualização de Produto", db.atualizar_produto],
                 3: ["Vendas", db.vendas],
-                4: ["Relatório de Itens", db.relatorio_estoque],
-                5: ["Sair", db.fechar]}
+                4: ["Relatório Gerencial", db.relatorio_gerencial],
+                5: ["Relatório de Baixo Estoque", db.relatorio_de_baixo_estoque],
+                6: ["Sair", db.fechar]}
 
     print("Operações disponíveis:")
     for chave, (descricao, _) in comandos.items():
