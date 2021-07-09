@@ -21,7 +21,7 @@ class Caixa:
                 continue
 
     def entrada(self):
-        print("Inserindo novos materiais:\n")
+        print("\nInserindo novos materiais:")
 
         while True:
             input_codigo = self.valida_tipo_de_input("Código do material", "inteiro")
@@ -42,13 +42,13 @@ class Caixa:
                                  (input_codigo, input_material, input_qtdade, input_valor))
                 self.cnx.commit()
 
-            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
                                                 "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
 
     def atualizar_produto(self):
-        print("Atualizando produtos:\n")
+        print("\nAtualizando produtos:")
 
         while True:
             produto_atualizado = self.valida_tipo_de_input("Código do material", "inteiro")
@@ -62,7 +62,7 @@ class Caixa:
             else:
                 print("Produto inexistente!")
 
-            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
                                                 "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
@@ -135,7 +135,7 @@ class Caixa:
         lista_compras = []
         valor_carrinho = 0
 
-        print("Adicione os produtos a serem vendidos:\n")
+        print("\nAdicione os produtos a serem vendidos:")
         while True:
             output_codigo = input("Código do material: ")
 
@@ -151,7 +151,7 @@ class Caixa:
                 lista_compras.append(produto_comprado)
                 valor_carrinho += valor_produto
 
-            comando = self.valida_tipo_de_input("Deseja adicionar outro produto no sistema? "
+            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
                                                 "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
@@ -171,16 +171,16 @@ class Caixa:
             for codigo, produto, qtdade, valor in conteudo:
                 print(f"{codigo}\t{produto}\t{qtdade:.2f}\t{valor}")
         else:
-            print("Não há produtos para este relatório!")
+            print("\nNão há produtos para este relatório!")
 
     def relatorio_gerencial(self):
-        print("Relatório Gerencial:\n")
+        print("\nRelatório Gerencial:")
 
         conteudo = self.cnx.execute("SELECT * FROM estoque").fetchall()
         self._imprime_relatorio(conteudo)
 
     def relatorio_de_baixo_estoque(self):
-        print("Relatório de Baixo Estoque:\n")
+        print("\nRelatório de Baixo Estoque:")
 
         while True:
             limite = self.valida_tipo_de_input("Defina, em kg, o limite de baixo estoque", "decimal")
@@ -188,7 +188,7 @@ class Caixa:
             conteudo = self.cnx.execute("SELECT * FROM estoque WHERE qtdade <= ?", (limite,)).fetchall()
             self._imprime_relatorio(conteudo)
 
-            comando = self.valida_tipo_de_input("Deseja analisar outro limite de estoque? "
+            comando = self.valida_tipo_de_input("\nDeseja analisar outro limite de estoque? "
                                                 "1 caso sim, 0 caso contrário", "inteiro")
             if not comando:
                 break
