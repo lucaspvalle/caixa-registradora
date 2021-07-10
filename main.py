@@ -19,7 +19,7 @@ def main():
         print(f"{chave}) {descricao}")
 
     while True:
-        operacao = db.valida_tipo_de_input("\nDigite o ID da operação desejada", "inteiro")
+        operacao = db.valida_tipo_de_input("\nDigite o ID da operação desejada")
         _, acao = comandos.get(operacao, erro)
         acao()
 

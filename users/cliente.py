@@ -1,3 +1,4 @@
+from tabulate import tabulate
 import sqlite3
 import socket
 
@@ -8,9 +9,11 @@ class Caixa:
         self.cnx.row_factory = sqlite3.Row
 
     @staticmethod
-    def valida_tipo_de_input(quem, tipo):
-        validos = {"inteiro": int,
-                   "decimal": float}
+    def valida_tipo_de_input(quem="", tipo="inteiro"):
+        validos = {"inteiro": int, "decimal": float}
+
+        if not quem:
+            quem = "\nDeseja continuar a operação? (sim: 1, não: 0)"
 
         while True:
             operacao = input(f"{quem}: ")
@@ -18,7 +21,10 @@ class Caixa:
                 return validos[tipo](operacao)
             except ValueError:
                 print(f"Comando deve ser um número {tipo}. Tente novamente.")
-                continue
+
+    @staticmethod
+    def _print_tabulate(conteudo, headers):
+        print(tabulate(conteudo, headers=headers, tablefmt="rst", floatfmt=".2f"))
 
     def entrada(self):
         print("\nInserindo novos materiais:")
@@ -42,8 +48,7 @@ class Caixa:
                                  (input_codigo, input_material, input_qtdade, input_valor))
                 self.cnx.commit()
 
-            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
-                                                "1 caso sim, 0 caso contrário", "inteiro")
+            comando = self.valida_tipo_de_input()
             if not comando:
                 break
 
@@ -62,8 +67,7 @@ class Caixa:
             else:
                 print("Produto inexistente!")
 
-            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
-                                                "1 caso sim, 0 caso contrário", "inteiro")
+            comando = self.valida_tipo_de_input()
             if not comando:
                 break
 
@@ -88,7 +92,7 @@ class Caixa:
             produto_comprado = ""
             valor_produto = 0
 
-            print("Código não reconhecido")
+            print("Código não reconhecido.")
 
         return produto_comprado, valor_produto
 
@@ -110,9 +114,9 @@ class Caixa:
                 self.cnx.execute("UPDATE estoque SET qtdade = ? WHERE codigo = ?", (novo_estoque, output_codigo))
                 self.cnx.commit()
             else:
-                print("Produto insuficiente")
+                print("Produto insuficiente!")
         else:
-            print("Código não reconhecido")
+            print("Código não reconhecido.")
 
         return produto_comprado, valor_produto
 
@@ -123,7 +127,7 @@ class Caixa:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((host, port))
 
-        print("Conexão estabelecida com a balança")
+        print("Conexão estabelecida com a balança.")
         reply = s.recv(4096)
         peso = round(float(reply.decode()), 3)
         s.close()
@@ -132,44 +136,34 @@ class Caixa:
         return peso
 
     def vendas(self):
-        lista_compras = []
-        valor_carrinho = 0
+        carrinho = {}
+        operacoes = {"7": self._adicionar_produto_no_carrinho, "8": self._ler_codigo_de_barras}
 
         print("\nAdicione os produtos a serem vendidos:")
         while True:
             output_codigo = input("Código do material: ")
-
-            if output_codigo[0] == "7":
-                produto_comprado, valor_produto = self._adicionar_produto_no_carrinho(output_codigo)
-            elif output_codigo[0] == "8":
-                produto_comprado, valor_produto = self._ler_codigo_de_barras(output_codigo)
-            else:
-                valor_produto = 0
-                produto_comprado = ""
+            produto_comprado, valor_produto = operacoes.get(output_codigo[0], lambda: ("", 0))(output_codigo)
 
             if valor_produto > 0:
-                lista_compras.append(produto_comprado)
-                valor_carrinho += valor_produto
+                if produto_comprado not in carrinho.keys():
+                    carrinho[produto_comprado] = valor_produto
+                else:
+                    carrinho[produto_comprado] += valor_produto
 
-            comando = self.valida_tipo_de_input("\nDeseja adicionar outro produto no sistema? "
-                                                "1 caso sim, 0 caso contrário", "inteiro")
+            comando = self.valida_tipo_de_input()
             if not comando:
                 break
 
-        if valor_carrinho > 0:
+        if len(carrinho) > 0:
             print("\nLista de produtos comprados:")
-            for produto in lista_compras:
-                print(produto)
+            self._print_tabulate(carrinho.items(), headers=["Produto", "Valor (R$)"])
+            print(f"O valor total da compra foi de R$ {sum(carrinho.values()):.2f}.")
+        else:
+            print("\nNenhum produto foi comprado.")
 
-            print(f"O valor total da compra foi R$ {valor_carrinho:.2f}")
-
-    @staticmethod
-    def _imprime_relatorio(conteudo):
+    def _imprime_relatorio(self, conteudo):
         if len(conteudo) > 0:
-            print("\nCódigo\tProduto\tQtdade (kg)\tValor (R$)")
-
-            for codigo, produto, qtdade, valor in conteudo:
-                print(f"{codigo}\t{produto}\t{qtdade:.2f}\t{valor}")
+            self._print_tabulate(conteudo, headers=["Código", "Produto", "Quantidade (kg)", "Valor (R$)"])
         else:
             print("\nNão há produtos para este relatório!")
 
@@ -180,18 +174,10 @@ class Caixa:
         self._imprime_relatorio(conteudo)
 
     def relatorio_de_baixo_estoque(self):
-        print("\nRelatório de Baixo Estoque:")
+        print("\nRelatório de Baixo Estoque (abaixo de 5 kg):")
 
-        while True:
-            limite = self.valida_tipo_de_input("Defina, em kg, o limite de baixo estoque", "decimal")
-
-            conteudo = self.cnx.execute("SELECT * FROM estoque WHERE qtdade <= ?", (limite,)).fetchall()
-            self._imprime_relatorio(conteudo)
-
-            comando = self.valida_tipo_de_input("\nDeseja analisar outro limite de estoque? "
-                                                "1 caso sim, 0 caso contrário", "inteiro")
-            if not comando:
-                break
+        conteudo = self.cnx.execute("SELECT * FROM estoque WHERE qtdade <= 5.0").fetchall()
+        self._imprime_relatorio(conteudo)
 
     def fechar(self):
         print("Conexão encerrada!")
