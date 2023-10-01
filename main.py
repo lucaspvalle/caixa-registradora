@@ -1,16 +1,16 @@
-from users.cliente import Caixa
+from libs.caixaCliente import CaixaServices
 
 
 def main():
-    db = Caixa()
+    services = CaixaServices()
     print("Bem vindo ao sistema!\n")
 
-    comandos = {1: ["Entrada", db.entrada],
-                2: ["Atualização de Produto", db.atualizar_produto],
-                3: ["Vendas", db.vendas],
-                4: ["Relatório Gerencial", db.relatorio_gerencial],
-                5: ["Relatório de Baixo Estoque", db.relatorio_de_baixo_estoque],
-                6: ["Sair", db.fechar]}
+    comandos = {1: ["Entrada", services.inserir_entrada_de_estoque],
+                2: ["Atualização de Produto", services.atualizar_preco_de_venda_de_produto],
+                3: ["Vendas", services.vender_produtos],
+                4: ["Relatório Gerencial", services.gerar_relatorio_completo_de_estoque],
+                5: ["Relatório de Baixo Estoque", services.gerar_relatorio_de_baixo_estoque],
+                6: ["Sair", exit]}
 
     erro = ["", lambda: print("Comando desconhecido. Tente novamente.")]
 
@@ -19,9 +19,9 @@ def main():
         print(f"{chave}) {descricao}")
 
     while True:
-        operacao = db.valida_tipo_de_input("\nDigite o ID da operação desejada")
-        _, acao = comandos.get(operacao, erro)
-        acao()
+        operacao_id = services.valida_tipo_de_input("\nDigite o ID da operação desejada")
+        _, realizar_acao = comandos.get(operacao_id, erro)
+        realizar_acao()
 
 
 if __name__ == "__main__":
